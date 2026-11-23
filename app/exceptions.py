@@ -16,7 +16,7 @@ class InvalidCode(Exception):
         super().__init__(self.message)
 
 
-class InvalidVivibility(Exception):
+class InvalidVisibility(Exception):
 
     def __init__(self):
 
