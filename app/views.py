@@ -1,10 +1,10 @@
 from django.shortcuts import render
 
-from .exceptions import SecureCodeDoesNotExists, InvalidCode
+from .exceptions import SecureCodeDoesNotExists, InvalidCode, SecureCodeUserPermissionDoesnotExist
 
 from uuid import UUID
 
-from .serializers import SecureCodeSerializer, OriginalURLSerializer
+from .serializers import SecureCodeSerializer, OriginalURLSerializer, SecureCodeUserPermissionSerializer
 
 from rest_framework import permissions
 
@@ -15,6 +15,8 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from app.services.SecureCode import SecureCodeService
+
+from app.services.SecureCodeUserPermission import SecureCodeUserPermissionService
 
 from app.models import SecureCode
 
@@ -63,6 +65,61 @@ def create_code(request):
 
     return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+def add_user_permission(request, id:UUID):
+    
+    user_perm = request.data
+
+    try:
+
+        secure_code = SecureCodeService().get_code_by_id(id)
+
+    except SecureCodeDoesNotExists as e:
+
+        return Response({"message":e}, status = status.HTTP_404_NOT_FOUND)
+
+    if secure_code.user != request.user:
+
+        return Response({"message":"OOPS! You can't add user for this code"}, status = status.HTTP_403_FORBIDDEN)
+
+    user_perm["secure_code"] = secure_code.id
+
+    serializer = SecureCodeUserPermissionSerializer(data = user_perm)
+
+    if serializer.is_valid():
+
+        serializer.save()
+
+        return Response(serializer.data, status = status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+@api_view(["DELETE"])
+@permission_classes([permissions.IsAuthenticated])
+def delete_user_permission(request, id:UUID):
+    
+    try:
+        
+        SecureCodeUserPermissionService().delete(request.user, id)
+
+        return Response({"message":"Successfully deleted user permission"}, status = status.HTTP_204_NO_CONTENT)
+
+    except SecureCodeUserPermissionDoesnotExist as e:
+
+        return Response({"message":str(e)}, status = status.HTTP_404_NOT_FOUND)
+
+    except Exception as e:
+
+        return Response({"message":"Something unexpected happened"}, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+def add_email_permission(request, id:UUID):pass
+
+@api_view(["DELETE"])
+@permission_classes([permissions.IsAuthenticated])
+def delete_email_permission(request, id:UUID):pass
 
 @api_view(["DELETE"])
 @permission_classes([permissions.IsAuthenticated])
