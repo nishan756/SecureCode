@@ -127,3 +127,13 @@ class UserLoginSerializer(serializers.Serializer):
         style = {"input_type":"password",}
         
     )
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = User
+
+        fields = ["username", "id"]
+
+        read_only_fields = ["username", "id"]
