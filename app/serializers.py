@@ -1,6 +1,27 @@
-from .models import SecureCode
+from .models import SecureCode, SecureCodeUserPermission, SecureCodeEmailPermission
 
 from rest_framework import serializers
+
+
+
+class SecureCodeUserPermissionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = SecureCodeUserPermission
+
+        fields = ["secure_code", "user"]
+    
+
+
+class SecureCodeEmailPermissionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = SecureCodeEmailPermission
+
+        fields = ["secure_code", "email"]
+
 
 class SecureCodeSerializer(serializers.ModelSerializer):
 
