@@ -2,6 +2,8 @@ from django.db import models
 
 from django.conf import settings
 
+from django.core.exceptions import ValidationError
+
 import uuid
 
 
@@ -49,7 +51,13 @@ class SecureCodeUserPermission(models.Model):
 
     def __str__(self):
 
-        return self.user
+        return f"{self.user.username} -> {self.secure_code}"
+
+    def clean(self, *args, **kwargs):
+
+        if self.user == self.secure_code.user:
+
+            raise ValidationError("OOPS! You cant assign userself as permitted user. You're already the owner of the secure code")
 
     class Meta:
 
