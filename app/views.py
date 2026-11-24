@@ -1,12 +1,8 @@
-from django.shortcuts import render, redirect
-
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
 from .exceptions import SecureCodeDoesNotExists, InvalidCode
 
 from uuid import UUID
-
-from django.contrib import messages
 
 from .serializers import SecureCodeSerializer, OriginalURLSerializer
 
@@ -19,6 +15,8 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from app.services.SecureCode import SecureCodeService
+
+from app.models import SecureCode
 
 
 def home(request):
@@ -83,6 +81,25 @@ def delete_code(request, id:UUID):
     except PermissionError as e:
 
         return Response({"message":str(e)}, status = status.HTTP_403_FORBIDDEN)
+
+@api_view(["DELETE"])
+@permission_classes([permissions.IsAuthenticated])
+def delete_multiple_code(request):
+    
+    selected_ids = request.data.get("selected_ids");
+
+    if selected_ids and isinstance(selected_ids, list):
+
+        SecureCode.objects.filter(id__in = selected_ids, user = request.user).delete()
+
+        return Response({"message":"Successfully deleted your secure codes"}, status = status.HTTP_204_NO_CONTENT)
+
+    elif not selected_ids:
+        return Response({"message":"Please provide one or more id"}, status = status.HTTP_400_BAD_REQUEST)
+
+    elif not isinstance(selected_ids, list):
+
+        return Response({"message":"Please parse a id list"}, status = status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET"])
