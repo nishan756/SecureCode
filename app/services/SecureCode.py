@@ -31,6 +31,10 @@ class SecureCodeService:
 
         return SecureCodeRepo().get_code_by_id(id)
 
+    def get_all_codes(self, user):
+
+        return SecureCodeRepo().get_sll_codes(user)
+
     def delete(self, user, code_id:UUID):
 
         secure_code = self.get_code_by_id(code_id)

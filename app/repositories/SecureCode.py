@@ -2,7 +2,7 @@ from app.models import SecureCode
 
 from django.contrib.auth import get_user_model as User
 
-from app.exceptions import InvalidVivibility, SecureCodeDoesNotExists
+from app.exceptions import InvalidVisibility, SecureCodeDoesNotExists
 
 from datetime import datetime
 
@@ -30,6 +30,11 @@ class SecureCodeRepo:
         except SecureCode.DoesNotExist:
 
             raise SecureCodeDoesNotExists()
+
+
+    def get_sll_codes(self, user:User):
+
+        return SecureCode.objects.filter(user = user)
 
 
     def delete(self, secure_code:SecureCode):
