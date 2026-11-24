@@ -25,4 +25,21 @@ class SecureCodeAdmin(admin.ModelAdmin):
         count = queryset.update(is_valid = True)
     
         return self.message_user(request, f"Successfully marked ({count}) secure code as valid")
-    
+
+@admin.register(SecureCodeUserPermission)
+class SecureCodeUserPermissionAdmin(admin.ModelAdmin):
+
+    list_display = ["user", "secure_code"]
+
+    list_per_page = 500
+
+    search_fields = ["user__username", "user__email"]
+
+@admin.register(SecureCodeEmailPermission)
+class SecureCodeUserPermissionAdmin(admin.ModelAdmin):
+
+    list_display = ["email", "secure_code"]
+
+    list_per_page = 500
+
+    search_fields = ["email",]
