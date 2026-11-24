@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import user_login, user_logout, user_signup, update_password, update_info
+from .views import user_login, user_logout, user_signup, update_password, update_info, get_users
 
 urlpatterns = [
 
@@ -13,5 +13,7 @@ urlpatterns = [
     path("update-password/", update_password, name = "update-password"),
 
     path("update-info/", update_info, name = "update-info"),
+
+    path("users/", get_users, name = "get-users"),
 
 ]
