@@ -1,4 +1,4 @@
-from .views import get_code, create_code, delete_code, home, my_codes
+from .views import get_code, create_code, delete_code, home, my_codes, delete_multiple_code
 
 from django.urls import path
 
@@ -13,4 +13,6 @@ urlpatterns = [
     path("create/", create_code, name = "create-code"),
 
     path("delete/<uuid:id>/", delete_code, name = "delete-code"),
+
+    path("delete-multiple/", delete_multiple_code, name = "delete-multiple-code"),
 ]
