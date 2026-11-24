@@ -1,10 +1,10 @@
 from django.shortcuts import render
 
-from .exceptions import SecureCodeDoesNotExists, InvalidCode, SecureCodeUserPermissionDoesnotExist
+from .exceptions import SecureCodeDoesNotExists, InvalidCode, SecureCodeUserPermissionDoesnotExist, SecureCodeEmailPermissionDoesntExist
 
 from uuid import UUID
 
-from .serializers import SecureCodeSerializer, OriginalURLSerializer, SecureCodeUserPermissionSerializer
+from .serializers import SecureCodeSerializer, OriginalURLSerializer, SecureCodeUserPermissionSerializer, SecureCodeEmailPermissionSerializer
 
 from rest_framework import permissions
 
@@ -17,6 +17,8 @@ from rest_framework import status
 from app.services.SecureCode import SecureCodeService
 
 from app.services.SecureCodeUserPermission import SecureCodeUserPermissionService
+
+from app.services.SecureCodeEmailPermission import SecureCodeEmailPermissionService
 
 from app.models import SecureCode
 
@@ -115,11 +117,60 @@ def delete_user_permission(request, id:UUID):
 
 @api_view(["POST"])
 @permission_classes([permissions.IsAuthenticated])
-def add_email_permission(request, id:UUID):pass
+def add_email_permission(request, id:UUID):
+    
+    try:
+
+        secure_code = SecureCodeService().get_code_by_id(id)
+
+        if secure_code.user == request.user:
+
+            data = request.data
+
+            data = data.copy()
+
+            data["secure_code"] = secure_code.id
+
+            serializer = SecureCodeEmailPermissionSerializer(data = data)
+
+            if serializer.is_valid():
+
+                serializer.save()
+
+                return Response(serializer.data, status = status.HTTP_201_CREATED)
+
+            return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message":"You can't perform this operation"}, status = status.HTTP_403_FORBIDDEN)
+
+    except SecureCodeDoesNotExists as e:
+
+        return Response({"message":str(e)}, status = status.HTTP_404_NOT_FOUND)
+
+    except Exception as e:
+
+        return Response({"message":"Something unexpected happened while processing this request"}, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(["DELETE"])
 @permission_classes([permissions.IsAuthenticated])
-def delete_email_permission(request, id:UUID):pass
+def delete_email_permission(request, id:UUID):
+    
+    try:
+
+        SecureCodeEmailPermissionService().delete(request.user, id)
+
+        return Response({"message":"Successfully deleted email permission"}, status = status.HTTP_204_NO_CONTENT)
+    
+    except SecureCodeEmailPermissionDoesntExist as e:
+
+        return Response({"message":str(e)}, status = status.HTTP_404_NOT_FOUND)
+    
+    except Exception as e:
+
+        print(str(e))
+
+        return Response({"message":"Something unexpected happened"}, status = status.HTTP_500_INTERNAL_SERVER_ERROR) 
 
 @api_view(["DELETE"])
 @permission_classes([permissions.IsAuthenticated])
