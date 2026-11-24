@@ -83,3 +83,14 @@ def delete_code(request, id:UUID):
     except PermissionError as e:
 
         return Response({"message":str(e)}, status = status.HTTP_403_FORBIDDEN)
+
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def my_codes(request):
+
+    secure_codes = SecureCodeService().get_all_codes(request.user)
+
+    serializer = SecureCodeSerializer(secure_codes, many = True)
+
+    return Response(serializer.data, status = status.HTTP_200_OK)
